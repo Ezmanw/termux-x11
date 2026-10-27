@@ -196,10 +196,13 @@ public class CmdEntryPoint extends ICmdEntryInterface.Stub {
     private static void initEntryPoint() {
         ctx = createContext();
 
+        // Foldiux: a host app whose native libraries are extracted (not loadable from inside the
+        // APK) passes the extracted library's path explicitly.
+        String override = System.getProperty("foldiux.lorie.lib");
         String path = "lib/" + (android.os.Process.is64Bit() ? Build.SUPPORTED_64_BIT_ABIS[0] : Build.SUPPORTED_32_BIT_ABIS[0]) + "/libXlorie.so";
         ClassLoader loader = CmdEntryPoint.class.getClassLoader();
-        URL res = loader != null ? loader.getResource(path) : null;
-        String libPath = res != null ? res.getFile().replace("file:", "") : null;
+        URL res = override == null && loader != null ? loader.getResource(path) : null;
+        String libPath = override != null ? override : res != null ? res.getFile().replace("file:", "") : null;
         if (libPath != null) {
             try {
                 System.load(libPath);
